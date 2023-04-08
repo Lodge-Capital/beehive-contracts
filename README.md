@@ -1,3 +1,3 @@
 # beehive-contracts (v1)
 
-Preferred Mainnet: Pulsechain
+Preferred Mainnet: ETH Layer 2
