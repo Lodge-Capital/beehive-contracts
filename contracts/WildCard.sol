@@ -198,3 +198,4 @@ contract Open is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Ownable {
     return super.supportsInterface(interfaceId);
   }
 }
+
