@@ -1493,3 +1493,4 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     return _delegate(signatory, delegatee);
   }
 }
+
