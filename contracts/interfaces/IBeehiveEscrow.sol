@@ -56,3 +56,4 @@ interface IBeehiveEscrow {
     uint _block
   ) external view returns (uint);
 }
+
