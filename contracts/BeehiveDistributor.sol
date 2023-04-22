@@ -386,3 +386,4 @@ contract BeehiveDistributor is IRewardsDistributor {
     depositor = _depositor;
   }
 }
+
