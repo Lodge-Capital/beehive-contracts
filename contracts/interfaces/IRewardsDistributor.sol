@@ -8,4 +8,6 @@ interface IRewardsDistributor {
   function claim(uint _tokenId) external returns (uint);
 
   function notifyPenalty() external;
+
+  function claim_many(uint[] memory _tokenIds) external returns (bool);
 }
