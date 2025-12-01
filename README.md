@@ -166,7 +166,7 @@ The Beehive allocates BUSD and DUES rewards based on the formula: weight = (amou
   - Increase unlock time: `--sig "runIncreaseUnlockTime(address,uint256,uint256)" <escrow> <tokenId> <lockDuration>`
   - Withdraw: `--sig "runWithdraw(address,uint256)" <escrow> <tokenId>`
 - Single-purpose helpers:
-  - `script/CreateLock.s.sol`, `script/IncreaseAmount.s.sol`, `script/IncreaseUnlockTime.s.sol`, `script/MergeLocks.s.sol`, `script/Withdraw.s.sol`, `script/ClaimRewards.s.sol`, `script/ClaimRewardsMany.s.sol`
+- `script/CreateLock.s.sol`, `script/IncreaseAmount.s.sol`, `script/IncreaseUnlockTime.s.sol`, `script/MergeLocks.s.sol`, `script/Withdraw.s.sol`, `script/ClaimRewards.s.sol`, `script/ClaimRewardsMany.s.sol`
 
 ### Parameters
 - `escrow`: address of `BeehiveEscrow`.
@@ -176,6 +176,38 @@ The Beehive allocates BUSD and DUES rewards based on the formula: weight = (amou
 - `amount`: DUES amount (wei) to lock or increase.
 - `lockDuration`: seconds to lock or extend (capped at 3 years).
 - `tokenId`: veNFT id.
+
+## Examples (Dev Network)
+- Assumes an Anvil RPC at `http://localhost:8545` and using the first default account as the broadcaster.
+- Example addresses (Anvil):
+  - Escrow: `0x1000000000000000000000000000000000000001` (replace with deployed address)
+  - Distributor: `0x1000000000000000000000000000000000000002`
+  - DUES token: `0x1000000000000000000000000000000000000003`
+  - Team: `0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266`
+
+- Deploy escrow:
+  - `forge script script/DeployEscrow.s.sol:DeployEscrow --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "run(address,address)" 0x1000...003 0xf39f...2266`
+
+- Set addresses:
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <TEAM_PK> --sig "runSetAddresses(address,address,address)" 0x1000...001 0xf39f...2266 0x1000...002`
+
+- Create lock (1 DUES for 2 weeks):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runCreateLock(address,uint256,uint256)" 0x1000...001 1000000000000000000 1209600`
+
+- Increase amount (add 0.5 DUES to tokenId 1):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runIncreaseAmount(address,uint256,uint256)" 0x1000...001 1 500000000000000000`
+
+- Increase unlock time (extend by 1 week for tokenId 1):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runIncreaseUnlockTime(address,uint256,uint256)" 0x1000...001 1 604800`
+
+- Merge locks (fromId 1 into toId 2):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runMerge(address,uint256,uint256)" 0x1000...001 1 2`
+
+- Claim rewards (many):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runClaimMany(address,uint256[])" 0x1000...002 "[1,2]"`
+
+- Withdraw (handles early vs expired):
+  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runWithdraw(address,uint256)" 0x1000...001 1`
 
 ## Security & Status
 - Not audited. Use at your own risk.
