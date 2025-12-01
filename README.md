@@ -8,128 +8,59 @@ Overview
 ## Legacy Narrative
 The Beehive runs on DUES which is inspired by HEX and has a meximum supply of just 3,333 tokens with the mint function renounced. Genius team, genius tokenomics.
 
-🐝
-The Beehive
-Honor your stake(s)!
+## Narrative Overview
+### Mission
+- Reward disciplined, long‑term staking behavior.
+- Enable transparent, NFT‑backed positions with clear end‑of‑term outcomes.
 
-SELF REPAYING LOANS COMING TO EVERY CHAIN.
+### Features
+- Time‑locked staking up to 3 years; longer locks earn higher end‑of‑term payouts.
+- Self‑repaying loan concept (planned module) using lock NFTs as collateral.
+- Optional daily APR boosts via VRF (planned integration).
 
-An Ultra Savings Account For Diamond Hands
-Designed for those with unwavering conviction and diamond hands. The Beehive, The Lodge's central pillar, is an ultra-savings account that rewards users who honor their stakes. With the ability to lock DUES tokens for any duration up to 3 years, users can earn higher end-of-term payouts with longer stakes.
+### Values
+- Industry and collective contribution; rewards patience, strategy, and resolve.
+- Aligns incentives toward honoring stakes and long‑term participation.
 
-The Beehive is the ultimate tool for those who have the discipline and patience to hold onto their investments.
+### Early Exit Policy
+- Early exit: 50% principal penalty; rewards forfeited; penalty redistributed via distributor.
+- Expired exit: 100% principal returned; rewards claimable via distributor.
 
-But that's not all The Beehive has to offer.
+### Airdrops
+- DUES stakers receive airdrops from future Lodge projects on launch.
 
-The protocol also features self-repaying loans, allowing users to borrow against their stake and earn yield that pays back what they borrow.
+### Profit Sources (Narrative)
+- Sales tax allocation (conceptual) and periodic conversions.
+- Early exit penalties redistributed to active stakers.
+- Price appreciation and scarcity dynamics.
 
-With the added bonus of daily boosts to APRs through Chainlink VFR, The Lodge provides a unique and rewarding DeFi experience for those who are willing to take the leap. So if you're looking for a DeFi protocol that rewards discipline and offers the opportunity for incredible yield, look no further than The Beehive.
+### Price Discovery & Arbitrage
+- Multi‑chain deployment creates opportunities for arbitrage across DUES and related pairs.
 
-The beehive is a symbol of industry, one where an individual contributes to the betterment of the collective whole without contention.
+### Deposits & NFTs
+- On deposit, an NFT is minted containing stake information (amount, start time, chosen lock duration).
+- The NFT is required to redeem end‑of‑stake outcomes.
 
-It's an open secret that time, patience and resolve has been quoted forever as the secret to wealth creation. In that spirit..
+### Merging Locks
+- Two positions can be merged into one; the new lock end uses the later of the two end times.
 
-Exiting your stake early slashes 50% of your DUES and you willingly forfeit all of your earned BUSD / DUES staking rewards. These rewards are distributed to DUES stakers who are actively honoring their stakes.
+### Cross‑Chain Plan
+- Multi‑chain roll‑out over time; users may bridge to chains with higher returns.
 
-Airdrops for DUES Stakers
-The Lodge will be releasing many projects over the months/years and every time we launch a new project DUES stakers in the Beehive will receive an airdrop for whatever project we're currently launching.
+### Supply & Tokenomics
+- Max DUES: 3,333.
+- Initial DUES target ~2,000; remaining emissions reward Farmers.
+- No developer pay or team allocation; community‑driven supply.
 
-DUES is the only token that earns rewards from the Beehive.
+### Earning DUES
+- Provide LEVEL/ETH liquidity (minimum 7 days).
+- Provide LODGE/ETH liquidity (minimum 7 days).
+- Create a Beehive stake and earn from redistributed penalties.
+- Longer participation increases compounding effects over time.
 
-WHERE DOES THE PROFIT COME FROM?
-Beehive profit is generated in 3 or 4 ways:
-A 6% sales tax applied to DUES is automatically converted into ETH and adds up in your dashboard which you may collect at any time.
-
-When a user exits their lock before the end date they lose 50% of their staked DUES and 100% of their earned rewards. 
-
-These rewards are distributed to those who did NOT exit their stakes.
-
-Price appreciation: This is a big one.
-
-DUES has a limited supply of only 3,333 and deploying on at least a dozen chains over the next years.
-
-That's 277 DUES per chain, although people will bridge their dues to whichever chain is currently offering the greatest returns.
-
-PRICE DISCOVERY..
-
-Arbitrage: For Arbitrage traders, DUES and LODGE will create a lot of opportunities.
-
-
-WHEN YOU DEPOSIT DUES INTO THE BEEHIVE
-Upon deposit of DUES into The Beehive, you will receive an NFT that has your stake information (how much you deposited, when you deposited it, how long you chose to create your lock, etc). You will need this NFT to redeem your end-of-stake rewards. Consider this NFT your key 🗝️.
-
-MERGING TWO LOCKS
-If you have two locks, two NFT's, two keys and want to merge them into one larger stake - not to worry. You may merge stakes/locks at any time. However, the new lock will use the longer time out of the two stakes to prevent fraud.
-
-3,333 $DUES SHARED BETWEEN OVER A DOZEN BLOCKCHAINS?
-The Beehive is the 'end of emissions plan' for each tomb deployment. As you provide liquidity for LEVEL and/or LODGE you steadily earn DUES at an exponential rate based on how long and how much liquidity you stake(d). Regular airdrops will also benefit Farmers.
-
-Many DUES will be locked in The Beehive earning ETH + more DUES, lowering the circulating supply even further.
-
-
-NOTE: EXACTLY 555 DUES ON EACH CHAIN WOULD BE HIGHLY UNLIKELY
-SCARCITY
-The DUES supply becomes more scarce as diamond-hand investors honor their stakes until the end.
-
-DUES has ZERO team tokens. All 3,333 go to the users who earn/buy them.
-
-WHICH BLOCKCHAINS ARE WE DEPLOYING ON?
-Arbitrum
-
-Fantom
-
-ETH
-
-AVAX
-
-POLYGON
-
-OPTIMISM
-
-ZKSYNC
-
-TOMB CHAIN
-
-CRONOS
-
-EVMOS
-
-and many more..
-
-🪙
-DUES Supply
-Micro Supply Tokenomics at its Finest
-
-MAX DUES: 3,333
-INITIAL DUES ~2,000
-(The other ~1,000 will slowly reward Farmers in the Lodge)
-
-DEVELOPER PAY: NOTHING / $0 / 0 DUES
-No DUES will ever be given to influencers, advertisers, team members or any other 3rd party - only those who buy during presale, earn it in the Farms or buy it from the market.
-
-DUES BELONGS TO THE COMMUNITY
-100% of the DUES supply goes directly to those who purchased and/or earned it.
-
-🕖
-Earn DUES
-Earned DUES should be collected or re-locked - letting price appreciation work its magic.
-
-Three ways to earn DUES:
-Provide LEVEL/ETH liquidity (for at least 7 days)
-
-Provide LODGE/ETH liquidity (for at least 7 days)
-
-Create a Beehive stake and earn the DUES slashed from those who exit their stakes early.
-
-After 7 days of Farming, you earn exponentially more DUES every single hour/day/week.
-
-🌟
-Rewards
-Reward Distribution
-BUSD and DUES Reward Distribution Mechanics
-
-How The Beehive Contract Distributes Rewards
-The Beehive allocates BUSD and DUES rewards based on the formula: weight = (amount*timelocked)/maxlocktime)At the core of The Lodge lies The Beehive and the Masonry, dual-revolutionary DeFi protocols that reward users for their long-term commitment and strategic choices. The Lodge's sophisticated allocation system distributes BUSD and DUES rewards in a way that is both fair and advantageous to the most dedicated participants. The formula for determining each user's share of rewards is based on a weight calculation that takes into account the amount of DUES that is staked and the length of time it is locked up for.​In other words, the longer you stake your DUES and the more you commit to the protocol, the higher your weight calculation will be, and the larger your share of the rewards. The Beehive's allocation system is carefully designed to incentivize users to think strategically about their investments, and to encourage long-term commitment to the protocol. The more dedicated you are to The Lodge, the more you will be rewarded over time. So if you're looking for a DeFi protocol that values patience, strategic thinking, and long-term commitment, The Lodge and The Beehive are the perfect fit for you. Essentially, the longer you stake and the more DUES you stake the larger your share of the BUSD and DUES distribution.
+### Rewards Mechanics (Narrative)
+- Allocation weight approximates: `weight = (amount * timeLocked) / maxLockTime`.
+- Designed to align rewards with commitment duration and stake size.
 
 ## Technical Overview
 - Contracts live under `contracts/` and are compiled/tested with Foundry.
