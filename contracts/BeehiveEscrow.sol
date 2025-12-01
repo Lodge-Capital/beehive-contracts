@@ -146,6 +146,11 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     artProxy = _proxy;
   }
 
+  function setBeehive(address _beehive) external {
+    require(msg.sender == team);
+    beehive = _beehive;
+  }
+
   /// @dev Returns current token URI metadata
   /// @param _tokenId Token ID to fetch URI for.
   function tokenURI(uint _tokenId) external view returns (string memory) {
@@ -543,8 +548,8 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   uint public supply;
 
   uint internal constant _WEEK = 1 weeks;
-  uint internal constant MAXTIME = 12 * 365 * 86400;
-  int128 internal constant iMAXTIME = 12 * 365 * 86400;
+  uint internal constant MAXTIME = 3 * 365 * 86400;
+  int128 internal constant iMAXTIME = 3 * 365 * 86400;
   uint internal constant MULTIPLIER = 1 ether;
 
   /*//////////////////////////////////////////////////////////////
@@ -949,8 +954,10 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
 
     require(IERC20(token).transfer(msg.sender, value), "transfer failed");
-    if (early && penalty > 0 && team != address(0)) {
-      require(IERC20(token).transfer(team, penalty), "penalty transfer failed");
+    if (early && penalty > 0) {
+      require(beehive != address(0), "no distributor");
+      require(IERC20(token).transfer(beehive, penalty), "penalty transfer failed");
+      IRewardsDistributor(beehive).notifyPenalty();
     }
 
     // Burn the NFT

@@ -191,6 +191,15 @@ contract BeehiveDistributor is IRewardsDistributor {
     _checkpoint_total_supply();
   }
 
+  function notifyPenalty() external {
+    uint token_balance = IERC20(token).balanceOf(address(this));
+    uint to_distribute = token_balance - token_last_balance;
+    token_last_balance = token_balance;
+    uint this_week = (block.timestamp / WEEK) * WEEK;
+    tokens_per_week[this_week] += to_distribute;
+    emit CheckpointToken(block.timestamp, to_distribute);
+  }
+
   function _claim(
     uint _tokenId,
     address ve,

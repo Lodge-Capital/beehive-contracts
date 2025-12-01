@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Test} from "lib/forge-std/src/Test.sol";
 import {BeehiveEscrow} from "contracts/BeehiveEscrow.sol";
+import {BeehiveDistributor} from "contracts/BeehiveDistributor.sol";
 import {VeArtProxy} from "contracts/VeArtProxy.sol";
 import {MockERC20} from "test/mocks/MockERC20.sol";
 
@@ -19,17 +20,18 @@ contract BeehiveEscrowTest is Test {
     token.approve(address(escrow), type(uint).max);
   }
 
-  function testEarlyWithdrawPenalty() public {
+  function testEarlyWithdrawPenaltyRoutesToDistributor() public {
+    BeehiveDistributor dist = new BeehiveDistributor(address(escrow));
+    escrow.setTeam(address(this));
+    escrow.setBeehive(address(dist));
     uint tid = escrow.create_lock(100 ether, 4 weeks);
-    escrow.setTeam(address(1));
     vm.warp(block.timestamp + 2 weeks);
     uint balBefore = token.balanceOf(address(this));
-    uint teamBefore = token.balanceOf(address(1));
     escrow.withdraw(tid);
     uint balAfter = token.balanceOf(address(this));
-    uint teamAfter = token.balanceOf(address(1));
     assertEq(balAfter - balBefore, 50 ether);
-    assertEq(teamAfter - teamBefore, 50 ether);
+    uint week = (block.timestamp / (7 days)) * (7 days);
+    assertEq(dist.tokens_per_week(week), 50 ether);
   }
 
   function testExpiredWithdrawNoPenalty() public {

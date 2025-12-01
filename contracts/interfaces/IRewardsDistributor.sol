@@ -6,4 +6,6 @@ interface IRewardsDistributor {
   function checkpoint_total_supply() external;
 
   function claim(uint _tokenId) external returns (uint);
+
+  function notifyPenalty() external;
 }
