@@ -155,3 +155,16 @@ The Beehive runs on DUES which is inspired by HEX and has a meximum supply of ju
 - Self-repaying loans against ve positions.
 - Chainlink VRF-based daily APR boosts (docs previously used “VFR”; intended “VRF”).
 - Expanded distributor logic and cross-chain deployment tooling.
+ 
+## Omnichain Demo
+- Targets Sepolia (home) and Arbitrum Sepolia (remote).
+- Deploy OFT on both and set peers:
+  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,uint256,address)" DUES DUES 421614 <remotePeer>`
+  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,uint256,address)" DUES DUES <homeChainId> <homePeer>`
+- Deploy ONFT on both and set peers:
+  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,uint256,address)" BeehiveLock bLOCK 421614 <remotePeer>`
+  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,uint256,address)" BeehiveLock bLOCK <homeChainId> <homePeer>`
+- Bridge DUES:
+  - `forge script script/omni/BridgeOFT.s.sol:BridgeOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint256,address,uint256,bytes)" <oftHome> 421614 <toRemote> 1000000000000000000 0x`
+- Mirror lock NFT:
+  - `forge script script/omni/BridgeONFT.s.sol:BridgeONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint256,address,uint256,bytes)" <onftHome> 421614 <toRemote> <tokenId> 0x`
