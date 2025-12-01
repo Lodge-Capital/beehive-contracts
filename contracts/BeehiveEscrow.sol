@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { IERC721, IERC721Metadata } from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import { IVotes } from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import { IERC721Receiver } from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import { IERC721 } from "contracts/interfaces/IERC721.sol";
+import { IERC721Metadata } from "contracts/interfaces/IERC721Metadata.sol";
+import { IVotes } from "contracts/interfaces/IVotes.sol";
+import { IERC721Receiver } from "contracts/interfaces/IERC721Receiver.sol";
 import { IERC20 } from "contracts/interfaces/IERC20.sol";
 import { IVeArtProxy } from "contracts/interfaces/IVeArtProxy.sol";
 import { IBeehiveEscrow } from "contracts/interfaces/IBeehiveEscrow.sol";
@@ -259,8 +260,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @dev Clear an approval of a given address
   ///      Throws if `_owner` is not the current owner.
   function _clearApproval(address _owner, uint _tokenId) internal {
-    // Throws if `_owner` is not the current owner
-    assert(idToOwner[_tokenId] == _owner);
+    require(idToOwner[_tokenId] == _owner, "not owner");
     if (idToApprovals[_tokenId] != address(0)) {
       // Reset approvals
       idToApprovals[_tokenId] = address(0);
@@ -447,8 +447,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @dev Add a NFT to a given address
   ///      Throws if `_tokenId` is owned by someone.
   function _addTokenTo(address _to, uint _tokenId) internal {
-    // Throws if `_tokenId` is owned by someone
-    assert(idToOwner[_tokenId] == address(0));
+    require(idToOwner[_tokenId] == address(0), "already owned");
     // Change the owner
     idToOwner[_tokenId] = _to;
     // Update owner token index tracking
@@ -464,8 +463,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @param _tokenId The token id to mint.
   /// @return A boolean that indicates if the operation was successful.
   function _mint(address _to, uint _tokenId) internal returns (bool) {
-    // Throws if `_to` is zero address
-    assert(_to != address(0));
+    require(_to != address(0), "zero address");
     // checkpoint for gov
     _moveTokenDelegates(address(0), delegates(_to), _tokenId);
     // Add NFT. Throws if `_tokenId` is owned by someone
@@ -507,8 +505,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @dev Remove a NFT from a given address
   ///      Throws if `_from` is not the current owner.
   function _removeTokenFrom(address _from, uint _tokenId) internal {
-    // Throws if `_from` is not the current owner
-    assert(idToOwner[_tokenId] == _from);
+    require(idToOwner[_tokenId] == _from, "not owner");
     // Change the owner
     idToOwner[_tokenId] = address(0);
     // Update owner token index tracking
@@ -928,34 +925,36 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
 
     LockedBalance memory _locked = locked[_tokenId];
 
-    /// @notice Early withdrawals loose half their stake!!!!!
+    uint amountLocked = uint(int256(_locked.amount));
     uint value;
-    bool early = false;
-    if (block.timestamp >= _locked.end) {
-      value = uint(int256(_locked.amount)) / 2;
-      early = true;
+    uint penalty;
+    bool early = block.timestamp < _locked.end;
+    if (early) {
+      penalty = amountLocked / 2;
+      value = amountLocked - penalty;
     } else {
-      value = uint(int256(_locked.amount));
-      IRewardsDistributor(beehive).claim(_tokenId);
+      value = amountLocked;
     }
 
     locked[_tokenId] = LockedBalance(0, 0);
     uint supply_before = supply;
-    supply = supply_before - value;
+    supply = supply_before - amountLocked;
 
     // old_locked can have either expired <= timestamp or zero end
     // _locked has only 0 end
     // Both can have >= 0 amount
     _checkpoint(_tokenId, _locked, LockedBalance(0, 0));
 
-    assert(IERC20(token).transfer(msg.sender, value));
+    require(IERC20(token).transfer(msg.sender, value), "transfer failed");
+    if (early && penalty > 0 && team != address(0)) {
+      require(IERC20(token).transfer(team, penalty), "penalty transfer failed");
+    }
 
     // Burn the NFT
     _burn(_tokenId);
 
     emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
-    emit Supply(supply_before, supply_before - value);
-    if (early) {}
+    emit Supply(supply_before, supply_before - amountLocked);
   }
 
   /*///////////////////////////////////////////////////////////////
@@ -1206,7 +1205,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   }
 
   /*///////////////////////////////////////////////////////////////
-                            DAO VOTING STORAGE
+                              DAO VOTING STORAGE
     //////////////////////////////////////////////////////////////*/
 
   /// @notice The EIP-712 typehash for the contract's domain
@@ -1231,6 +1230,8 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
 
   /// @notice A record of states for signing / validating signatures
   mapping(address => uint) public nonces;
+
+  event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
 
   /**
    * @notice Overrides the standard `Comp.sol` delegates mapping to return

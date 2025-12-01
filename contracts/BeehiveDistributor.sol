@@ -28,13 +28,13 @@ contract BeehiveDistributor is IRewardsDistributor {
 
   uint public last_token_time;
 
-  uint[1000000000000000] public tokens_per_week;
+  mapping(uint => uint) public tokens_per_week;
 
   address public voting_escrow;
   address public token;
   uint public token_last_balance;
 
-  uint[1000000000000000] public ve_supply;
+  mapping(uint => uint) public ve_supply;
 
   address public depositor;
 
@@ -92,7 +92,7 @@ contract BeehiveDistributor is IRewardsDistributor {
   }
 
   function checkpoint_token() external {
-    assert(msg.sender == depositor);
+    require(msg.sender == depositor, "not depositor");
     _checkpoint_token();
   }
 
