@@ -1,5 +1,11 @@
-# beehive-contracts (v1)
+# Beehive Contracts
 
+Overview
+- Time-locked staking of DUES mints a lock NFT.
+- Early exits penalize 50% routed via distributor; expired exits return 100%.
+- Supports merging locks, voting checkpoints, and delegation.
+
+## Legacy Narrative
 The Beehive runs on DUES which is inspired by HEX and has a meximum supply of just 3,333 tokens with the mint function renounced. Genius team, genius tokenomics.
 
 🐝
