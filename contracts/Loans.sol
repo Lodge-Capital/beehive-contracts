@@ -60,17 +60,21 @@ contract Loans {
     require(amount > 0, "amount=0");
     address owner = escrow.ownerOf(tokenId);
     require(owner == msg.sender, "not owner");
+    require(block.timestamp < escrow.locked__end(tokenId), "lock expired");
+    // Require Loans to be approved as operator or token-approved for liquidation path
     require(escrow.isApprovedOrOwner(address(this), tokenId), "approve Loans for NFT");
-    // Move NFT collateral to Loans
-    escrow.transferFrom(msg.sender, address(this), tokenId);
 
     uint256 mb = maxBorrow(tokenId);
     require(amount <= mb, "exceeds LTV");
     require(dues.balanceOf(address(this)) >= amount, "insufficient liquidity");
 
     Collateral storage c = collateral[tokenId];
+    require(c.debt == 0, "already collateralized");
     c.owner = owner;
-    c.debt += amount;
+    c.debt = amount;
+
+    // Mark as attached via voter role to block transfers/withdraw/merge
+    escrow.attach(tokenId);
 
     require(dues.transfer(owner, amount), "transfer failed");
     emit Borrowed(tokenId, owner, amount);
@@ -85,8 +89,8 @@ contract Loans {
     c.debt -= amount;
     emit Repaid(tokenId, msg.sender, amount);
     if (c.debt == 0) {
-      // Return NFT to owner
-      escrow.transferFrom(address(this), c.owner, tokenId);
+      // Detach to re-enable transfers/withdraw
+      escrow.detach(tokenId);
     }
   }
 
@@ -102,7 +106,11 @@ contract Loans {
     require(dues.transferFrom(msg.sender, address(this), repayAmount), "transferFrom failed");
     // Clear debt and transfer NFT; will revert if attached/voted
     c.debt = 0;
-    escrow.transferFrom(address(this), to, tokenId);
+    // Detach first to allow transfer
+    escrow.detach(tokenId);
+    // Require Loans still approved to transfer on owner's behalf
+    require(escrow.isApprovedOrOwner(address(this), tokenId), "not approved to transfer");
+    escrow.transferFrom(c.owner, to, tokenId);
     emit Liquidated(tokenId, msg.sender, repayAmount);
   }
 }
