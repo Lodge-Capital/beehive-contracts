@@ -934,6 +934,9 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
       value = amountLocked - penalty;
     } else {
       value = amountLocked;
+      if (beehive != address(0)) {
+        IRewardsDistributor(beehive).claim(_tokenId);
+      }
     }
 
     locked[_tokenId] = LockedBalance(0, 0);
