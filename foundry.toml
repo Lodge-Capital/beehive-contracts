@@ -9,7 +9,16 @@ evm_version = "cancun"
 auto_detect_solc = true
 remappings = [
   "@openzeppelin/=lib/openzeppelin-contracts/",
-  "forge-std/=lib/forge-std/src/"
+  "forge-std/=lib/forge-std/src/",
+  "@layerzerolabs/lz-evm-oapp-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/oapp/",
+  "@layerzerolabs/lz-evm-protocol-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/protocol/",
+  "@layerzerolabs/lz-evm-messagelib-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/messagelib/",
+  "@layerzerolabs/options/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/oapp/libs/",
+  "@layerzerolabs/oapp-evm/contracts/=lib/devtools/packages/oapp-evm/contracts/",
+  "@layerzerolabs/oft-evm/contracts/=lib/devtools/packages/oft-evm/contracts/",
+  "@layerzerolabs/onft-evm/contracts/=lib/devtools/packages/onft-evm/contracts/",
+  "@layerzerolabs/onft-evm/=lib/devtools/packages/onft-evm/contracts/",
+  "@layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/contracts/"
 ]
 ignored_paths = [
   "contracts/wildcard.sol",
