@@ -21,6 +21,9 @@ remappings = [
   "@layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/contracts/"
 ]
 ignored_paths = [
+  "contracts/omni/OFTDUES.sol",
+  "script/omni/DeployOFT.s.sol",
+  "script/omni/BridgeOFT.s.sol",
   "contracts/wildcard.sol",
   "contracts/libraries/Operator.sol",
   "contracts/interfaces/Operator.sol",

@@ -159,12 +159,17 @@ The Beehive runs on DUES which is inspired by HEX and has a meximum supply of ju
 ## Omnichain Demo
 - Targets Sepolia (home) and Arbitrum Sepolia (remote).
 - Deploy OFT on both and set peers:
-  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,uint256,address)" DUES DUES 421614 <remotePeer>`
-  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,uint256,address)" DUES DUES <homeChainId> <homePeer>`
+  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,address,address)" DUES DUES <HOME_ENDPOINT> <DELEGATE>`
+  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,address,address)" DUES DUES <REMOTE_ENDPOINT> <DELEGATE>`
 - Deploy ONFT on both and set peers:
-  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,uint256,address)" BeehiveLock bLOCK 421614 <remotePeer>`
-  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,uint256,address)" BeehiveLock bLOCK <homeChainId> <homePeer>`
+  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,address,address)" BeehiveLock bLOCK <HOME_ENDPOINT> <DELEGATE>`
+  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,address,address)" BeehiveLock bLOCK <REMOTE_ENDPOINT> <DELEGATE>`
+- Set peers (trusted remotes):
+  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "runSetOFT(address,uint32,address)" <oftHome> <REMOTE_EID> <oftRemote>`
+  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "runSetOFT(address,uint32,address)" <oftRemote> <HOME_EID> <oftHome>`
+  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "runSetONFT(address,uint32,address)" <onftHome> <REMOTE_EID> <onftRemote>`
+  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "runSetONFT(address,uint32,address)" <onftRemote> <HOME_EID> <onftHome>`
 - Bridge DUES:
-  - `forge script script/omni/BridgeOFT.s.sol:BridgeOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint256,address,uint256,bytes)" <oftHome> 421614 <toRemote> 1000000000000000000 0x`
+  - `forge script script/omni/BridgeOFT.s.sol:BridgeOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint32,address,uint256,bytes)" <oftHome> <REMOTE_EID> <toRemote> 1000000000000000000 0x --value <fee>`
 - Mirror lock NFT:
-  - `forge script script/omni/BridgeONFT.s.sol:BridgeONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint256,address,uint256,bytes)" <onftHome> 421614 <toRemote> <tokenId> 0x`
+  - `forge script script/omni/BridgeONFT.s.sol:BridgeONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint32,address,uint256,bytes)" <onftHome> <REMOTE_EID> <toRemote> <tokenId> 0x --value <fee>`
