@@ -351,6 +351,16 @@ contract BeehiveDistributor is IRewardsDistributor {
     return _claimable(_tokenId, voting_escrow, _last_token_time);
   }
 
+  function claimableMany(uint[] memory _tokenIds) external view returns (uint total) {
+    uint _last_token_time = (last_token_time / WEEK) * WEEK;
+    address ve = voting_escrow;
+    for (uint i = 0; i < _tokenIds.length; i++) {
+      uint tokenId = _tokenIds[i];
+      if (tokenId == 0) break;
+      total += _claimable(tokenId, ve, _last_token_time);
+    }
+  }
+
   function claim(uint _tokenId) external returns (uint) {
     require(
       IBeehiveEscrow(voting_escrow).locked__end(_tokenId) > block.timestamp
