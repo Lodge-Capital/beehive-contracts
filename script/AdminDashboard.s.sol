@@ -26,6 +26,12 @@ contract AdminDashboard is Script {
     vm.stopBroadcast();
   }
 
+  function runSetLoansAsVoter(address escrow, address loans) external {
+    vm.startBroadcast();
+    BeehiveEscrow(escrow).setVoter(loans);
+    vm.stopBroadcast();
+  }
+
   function runCheckpointDistributor(address distributor) external {
     vm.startBroadcast();
     IRewardsDistributor(distributor).checkpoint_total_supply();
