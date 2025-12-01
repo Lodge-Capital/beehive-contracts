@@ -152,6 +152,31 @@ The Beehive allocates BUSD and DUES rewards based on the formula: weight = (amou
 - Test: `forge test`
 - Remappings: configured in `foundry.toml` for OpenZeppelin and `forge-std`.
 
+## Scripts
+- Deploy Escrow: `forge script script/DeployEscrow.s.sol:DeployEscrow --rpc-url <RPC> --broadcast --private-key <KEY> --sig "run(address,address)" <duesToken> <team>`
+- Admin Dashboard (multi-action):
+  - Set addresses: `--sig "runSetAddresses(address,address,address)" <escrow> <team> <distributor>`
+  - Set art proxy: `--sig "runSetArtProxy(address,address)" <escrow> <artProxy>`
+  - Set voter: `--sig "runSetVoter(address,address)" <escrow> <voter>`
+  - Distributor checkpoints: `--sig "runCheckpointDistributor(address)" <distributor>`
+  - Merge locks: `--sig "runMerge(address,uint256,uint256)" <escrow> <fromId> <toId>`
+  - Claim many: `--sig "runClaimMany(address,uint256[])" <distributor> "[<id1>,<id2>]"`
+  - Create lock: `--sig "runCreateLock(address,uint256,uint256)" <escrow> <amount> <lockDuration>`
+  - Increase amount: `--sig "runIncreaseAmount(address,uint256,uint256)" <escrow> <tokenId> <amount>`
+  - Increase unlock time: `--sig "runIncreaseUnlockTime(address,uint256,uint256)" <escrow> <tokenId> <lockDuration>`
+  - Withdraw: `--sig "runWithdraw(address,uint256)" <escrow> <tokenId>`
+- Single-purpose helpers:
+  - `script/CreateLock.s.sol`, `script/IncreaseAmount.s.sol`, `script/IncreaseUnlockTime.s.sol`, `script/MergeLocks.s.sol`, `script/Withdraw.s.sol`, `script/ClaimRewards.s.sol`, `script/ClaimRewardsMany.s.sol`
+
+### Parameters
+- `escrow`: address of `BeehiveEscrow`.
+- `distributor`: address of `BeehiveDistributor`.
+- `duesToken`: ERC20 token address used for escrow deposits.
+- `team`, `voter`, `artProxy`: admin-controlled addresses.
+- `amount`: DUES amount (wei) to lock or increase.
+- `lockDuration`: seconds to lock or extend (capped at 3 years).
+- `tokenId`: veNFT id.
+
 ## Security & Status
 - Not audited. Use at your own risk.
 - No reliance on `tx.origin` in guards; per-sender-per-block guard only.
