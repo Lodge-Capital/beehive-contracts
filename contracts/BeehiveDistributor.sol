@@ -258,7 +258,7 @@ contract BeehiveDistributor is IRewardsDistributor {
           0
         );
         if (balance_of == 0 && user_epoch > max_user_epoch) break;
-        if (balance_of != 0) {
+        if (balance_of != 0 && ve_supply[week_cursor] > 0) {
           to_distribute +=
             (balance_of * tokens_per_week[week_cursor]) /
             ve_supply[week_cursor];
@@ -334,7 +334,7 @@ contract BeehiveDistributor is IRewardsDistributor {
           0
         );
         if (balance_of == 0 && user_epoch > max_user_epoch) break;
-        if (balance_of != 0) {
+        if (balance_of != 0 && ve_supply[week_cursor] > 0) {
           to_distribute +=
             (balance_of * tokens_per_week[week_cursor]) /
             ve_supply[week_cursor];
@@ -362,9 +362,6 @@ contract BeehiveDistributor is IRewardsDistributor {
   }
 
   function claim(uint _tokenId) external returns (uint) {
-    require(
-      IBeehiveEscrow(voting_escrow).locked__end(_tokenId) > block.timestamp
-    );
     if (block.timestamp >= time_cursor) _checkpoint_total_supply();
     uint _last_token_time = last_token_time;
     _last_token_time = (_last_token_time / WEEK) * WEEK;

@@ -256,7 +256,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @param _approved True if the operators is approved, false to revoke approval.
   function setApprovalForAll(address _operator, bool _approved) external {
     // Throws if `_operator` is the `msg.sender`
-    assert(_operator != msg.sender);
+    require(_operator != msg.sender, "operator is sender");
     ownerToOperators[msg.sender][_operator] = _approved;
     emit ApprovalForAll(msg.sender, _operator, _approved);
   }
@@ -532,7 +532,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     // checkpoint for gov
     _moveTokenDelegates(delegates(owner), address(0), _tokenId);
     // Remove token
-    _removeTokenFrom(msg.sender, _tokenId);
+    _removeTokenFrom(owner, _tokenId);
     emit Transfer(owner, address(0), _tokenId);
   }
 
@@ -773,7 +773,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
 
     address from = msg.sender;
     if (_value != 0 && deposit_type != DepositType.MERGE_TYPE) {
-      assert(IERC20(token).transferFrom(from, address(this), _value));
+      require(IERC20(token).transferFrom(from, address(this), _value), "transfer failed");
     }
 
     emit Deposit(
@@ -784,7 +784,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
       deposit_type,
       block.timestamp
     );
-    emit Supply(supply_before, supply_before + _value);
+    emit Supply(supply_before, supply);
   }
 
   function block_number() external view returns (uint) {
@@ -873,11 +873,11 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
   /// @param _value Amount of tokens to deposit and add to the lock
   function increase_amount(uint _tokenId, uint _value) external nonreentrant {
-    assert(_isApprovedOrOwner(msg.sender, _tokenId));
+    require(_isApprovedOrOwner(msg.sender, _tokenId), "not owner");
 
     LockedBalance memory _locked = locked[_tokenId];
 
-    assert(_value > 0); // dev: need non-zero value
+    require(_value > 0, "need non-zero value");
     require(_locked.amount > 0, "No existing lock found");
     require(
       _locked.end > block.timestamp,
@@ -899,7 +899,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     uint _tokenId,
     uint _lock_duration
   ) external nonreentrant {
-    assert(_isApprovedOrOwner(msg.sender, _tokenId));
+    require(_isApprovedOrOwner(msg.sender, _tokenId), "not owner");
 
     LockedBalance memory _locked = locked[_tokenId];
     uint unlock_time = ((block.timestamp + _lock_duration) / _WEEK) * _WEEK; // Locktime is rounded down to weeks
@@ -925,7 +925,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
   /// @notice Early withdrawals loose half their stake!!!!!
   /// @dev Only possible if the lock has expired
   function withdraw(uint _tokenId) external nonreentrant {
-    assert(_isApprovedOrOwner(msg.sender, _tokenId));
+    require(_isApprovedOrOwner(msg.sender, _tokenId), "not owner");
     require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
 
     LockedBalance memory _locked = locked[_tokenId];
@@ -964,7 +964,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
     _burn(_tokenId);
 
     emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
-    emit Supply(supply_before, supply_before - amountLocked);
+    emit Supply(supply_before, supply);
   }
 
   /*///////////////////////////////////////////////////////////////
@@ -1194,6 +1194,7 @@ contract BeehiveEscrow is IERC721, IERC721Metadata, IVotes {
 
   function detach(uint _tokenId) external {
     require(msg.sender == voter);
+    require(attachments[_tokenId] > 0, "no attachments");
     attachments[_tokenId] = attachments[_tokenId] - 1;
   }
 
