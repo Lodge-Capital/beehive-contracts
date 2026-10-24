@@ -1,9 +1,6 @@
 {
-  "lib/openzeppelin-contracts": {
-    "tag": {
-      "name": "v5.5.0",
-      "rev": "fcbae5394ae8ad52d8e580a3477db99814b9d565"
-    }
+  "lib/LayerZero-v2": {
+    "rev": "ab9b083410b9359285a5756807e1b6145d4711a7"
   },
   "lib/devtools": {
     "rev": "270a49d03f223523c9ae2b1900a490f8ba083bdc"
@@ -14,7 +11,10 @@
       "rev": "7117c90c8cf6c68e5acce4f09a6b24715cea4de6"
     }
   },
-  "lib/LayerZero-v2": {
-    "rev": "ab9b083410b9359285a5756807e1b6145d4711a7"
+  "lib/openzeppelin-contracts": {
+    "tag": {
+      "name": "v5.5.0",
+      "rev": "fcbae5394ae8ad52d8e580a3477db99814b9d565"
+    }
   }
 }

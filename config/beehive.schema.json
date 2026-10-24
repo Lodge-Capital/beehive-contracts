@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://beehive.local/beehive.config.schema.json",
+  "title": "BeehiveConfig",
+  "type": "object",
+  "required": [
+    "chain",
+    "createx",
+    "tokens",
+    "genesis",
+    "locks",
+    "fees",
+    "honeyPot",
+    "loans",
+    "oracle",
+    "dex",
+    "buyback",
+    "admin",
+    "layerzero",
+    "addresses",
+    "haltTrading"
+  ],
+  "properties": {
+    "chain": {
+      "type": "object",
+      "required": ["name", "chainId", "rpcUrl", "explorer"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "chainId": { "type": "integer", "exclusiveMinimum": 0 },
+        "rpcUrl": { "type": "string", "minLength": 1 },
+        "explorer": { "type": "string" }
+      }
+    },
+    "createx": {
+      "type": "object",
+      "required": ["factory", "launcher", "salts"],
+      "properties": {
+        "factory": { "type": "string" },
+        "launcher": { "type": "string" },
+        "salts": { "type": "object" }
+      }
+    },
+    "tokens": { "type": "object" },
+    "genesis": { "type": "object" },
+    "locks": { "type": "object" },
+    "fees": { "type": "object" },
+    "honeyPot": { "type": "object" },
+    "loans": { "type": "object" },
+    "oracle": { "type": "object" },
+    "dex": { "type": "object" },
+    "buyback": { "type": "object" },
+    "admin": { "type": "object" },
+    "layerzero": { "type": "object" },
+    "addresses": { "type": "object" },
+    "haltTrading": { "type": "boolean", "const": false }
+  }
+}

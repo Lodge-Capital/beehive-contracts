@@ -1,0 +1,116 @@
+{
+  "chain": {
+    "name": "base",
+    "chainId": 8453,
+    "rpcUrl": "https://mainnet.base.org",
+    "explorer": "https://basescan.org"
+  },
+  "createx": {
+    "factory": "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed",
+    "launcher": "0x0000000000000000000000000000000000000001",
+    "salts": {
+      "dues": "0x626565686976652e76322e647565730000000000000000000000000000000000",
+      "genesis": "0x626565686976652e76322e67656e657369730000000000000000000000000000",
+      "locks": "0x626565686976652e76322e6c6f636b7300000000000000000000000000000000",
+      "revenue": "0x626565686976652e76322e726576656e75650000000000000000000000000000",
+      "honey": "0x626565686976652e76322e686f6e657900000000000000000000000000000000",
+      "market": "0x626565686976652e76322e6d61726b6574000000000000000000000000000000",
+      "loans": "0x626565686976652e76322e6c6f616e7300000000000000000000000000000000",
+      "oracle": "0x626565686976652e76322e6f7261636c65000000000000000000000000000000",
+      "buyback": "0x626565686976652e76322e6275796261636b0000000000000000000000000000",
+      "timelock": "0x626565686976652e76322e74696d656c6f636b00000000000000000000000000",
+      "omni": "0x626565686976652e76322e6f6d6e690000000000000000000000000000000000"
+    }
+  },
+  "tokens": {
+    "dues": {
+      "name": "DUES",
+      "symbol": "DUES",
+      "decimals": 18,
+      "maxSupplyWhole": 3333
+    },
+    "quote": {
+      "symbol": "USDC",
+      "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "decimals": 6
+    }
+  },
+  "genesis": {
+    "durationSeconds": 2592000,
+    "liquiditySeedBps": 1000,
+    "timeBonusBps": 2000,
+    "biggerBonusBps": 1000,
+    "biggerRefWhole": 10000
+  },
+  "locks": {
+    "nftName": "Beehive Stake",
+    "nftSymbol": "HIVE",
+    "minLockSeconds": 2592000,
+    "maxLockSeconds": 94608000,
+    "earlyUnlockSlashBps": 5000,
+    "lateGraceSeconds": 86400,
+    "latePenaltyBpsPerDay": 50,
+    "maxLatePenaltyBps": 5000,
+    "longerBonusBps": 20000,
+    "biggerBonusBps": 10000,
+    "biggerRefWhole": 10
+  },
+  "fees": {
+    "marketplaceFeeBps": 750,
+    "minListingSeconds": 3600,
+    "honeyPotShareBps": 2500,
+    "stakerShareBps": 6000,
+    "buybackShareBps": 1500
+  },
+  "honeyPot": {
+    "epochSeconds": 7776000
+  },
+  "loans": {
+    "ltvBps": 3500,
+    "liqThresholdBps": 4000,
+    "interestAprBps": 1200,
+    "stakerInterestShareBps": 4000,
+    "auctionDurationSeconds": 86400,
+    "auctionStartBps": 10000
+  },
+  "oracle": {
+    "twapWindowSeconds": 1800,
+    "minLiquidity": 1000
+  },
+  "dex": {
+    "router": "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
+    "factory": "0x420DD381b31aEfC0351f28E6CF74b60e6d704261",
+    "pairInitCodeHash": "0x0000000000000000000000000000000000000000000000000000000000000001"
+  },
+  "buyback": {
+    "slippageBps": 300
+  },
+  "admin": {
+    "owner": "0x0000000000000000000000000000000000000001",
+    "guardian": "0x0000000000000000000000000000000000000002",
+    "timelockDelaySeconds": 172800,
+    "timelockMinDelaySeconds": 86400,
+    "timelockMaxDelaySeconds": 2592000
+  },
+  "layerzero": {
+    "enabled": true,
+    "endpoint": "0x1a44076050125825900e736c501f859c50fE728c",
+    "eid": 30184,
+    "peers": []
+  },
+  "addresses": {
+    "dues": "0x0000000000000000000000000000000000000000",
+    "genesis": "0x0000000000000000000000000000000000000000",
+    "locks": "0x0000000000000000000000000000000000000000",
+    "revenue": "0x0000000000000000000000000000000000000000",
+    "honey": "0x0000000000000000000000000000000000000000",
+    "market": "0x0000000000000000000000000000000000000000",
+    "loans": "0x0000000000000000000000000000000000000000",
+    "oracle": "0x0000000000000000000000000000000000000000",
+    "buyback": "0x0000000000000000000000000000000000000000",
+    "timelock": "0x0000000000000000000000000000000000000000",
+    "omni": "0x0000000000000000000000000000000000000000",
+    "lpPair": "0x0000000000000000000000000000000000000000"
+  },
+  "haltTrading": false
+}
