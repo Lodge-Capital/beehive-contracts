@@ -1,44 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity 0.8.26;
 
-contract MockERC20 {
-  string public name = "MockToken";
-  string public symbol = "MCK";
-  uint8 public decimals = 18;
-  uint public totalSupply;
-  mapping(address => uint) public balanceOf;
-  mapping(address => mapping(address => uint)) public allowance;
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-  event Transfer(address indexed from, address indexed to, uint value);
-  event Approval(address indexed owner, address indexed spender, uint value);
+contract MockERC20 is ERC20 {
+  uint8 private immutable _decimals;
 
-  function mint(address to, uint amount) external {
-    totalSupply += amount;
-    balanceOf[to] += amount;
-    emit Transfer(address(0), to, amount);
+  constructor(string memory name_, string memory symbol_, uint8 decimals_) ERC20(name_, symbol_) {
+    _decimals = decimals_;
   }
 
-  function approve(address spender, uint amount) external returns (bool) {
-    allowance[msg.sender][spender] = amount;
-    emit Approval(msg.sender, spender, amount);
-    return true;
+  function decimals() public view override returns (uint8) {
+    return _decimals;
   }
 
-  function transfer(address to, uint amount) external returns (bool) {
-    require(balanceOf[msg.sender] >= amount, "insufficient");
-    balanceOf[msg.sender] -= amount;
-    balanceOf[to] += amount;
-    emit Transfer(msg.sender, to, amount);
-    return true;
-  }
-
-  function transferFrom(address from, address to, uint amount) external returns (bool) {
-    require(balanceOf[from] >= amount, "insufficient");
-    require(allowance[from][msg.sender] >= amount, "no allowance");
-    allowance[from][msg.sender] -= amount;
-    balanceOf[from] -= amount;
-    balanceOf[to] += amount;
-    emit Transfer(from, to, amount);
-    return true;
+  function mint(address to, uint256 amount) external {
+    _mint(to, amount);
   }
 }

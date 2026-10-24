@@ -3,29 +3,35 @@ src = "contracts"
 test = "test"
 out = "out"
 libs = ["lib"]
+script = "script"
 optimizer = true
 optimizer_runs = 200
+via_ir = true
 evm_version = "cancun"
-auto_detect_solc = true
+solc = "0.8.26"
+auto_detect_solc = false
+ffi = false
+fs_permissions = [
+  { access = "read-write", path = "./config" },
+  { access = "read-write", path = "./beehive.config.json" },
+  { access = "read", path = "./out" }
+]
 remappings = [
   "@openzeppelin/=lib/openzeppelin-contracts/",
   "forge-std/=lib/forge-std/src/",
-  "@layerzerolabs/lz-evm-oapp-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/oapp/",
-  "@layerzerolabs/lz-evm-protocol-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/protocol/",
-  "@layerzerolabs/lz-evm-messagelib-v2/=lib/LayerZero-v2/packages/layerzero-v2/evm/messagelib/",
-  "@layerzerolabs/options/=lib/LayerZero-v2/packages/layerzero-v2/evm/oapp/contracts/oapp/libs/",
-  "@layerzerolabs/oapp-evm/contracts/=lib/devtools/packages/oapp-evm/contracts/",
-  "@layerzerolabs/oft-evm/contracts/=lib/devtools/packages/oft-evm/contracts/",
-  "@layerzerolabs/onft-evm/contracts/=lib/devtools/packages/onft-evm/contracts/",
-  "@layerzerolabs/onft-evm/=lib/devtools/packages/onft-evm/contracts/",
-  "@layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/contracts/"
+  "script/=script/",
+  "contracts/=contracts/"
 ]
-ignored_paths = [
-  "contracts/omni/OFTDUES.sol",
-  "script/omni/DeployOFT.s.sol",
-  "script/omni/BridgeOFT.s.sol",
-  "contracts/wildcard.sol",
-  "contracts/libraries/Operator.sol",
-  "contracts/interfaces/Operator.sol",
-  "contracts/interfaces/ShareWrapper.sol"
-]
+
+[profile.default.fmt]
+line_length = 120
+tab_width = 2
+bracket_spacing = false
+int_types = "long"
+
+[fuzz]
+runs = 256
+
+[invariant]
+runs = 64
+depth = 32

@@ -1,175 +1,84 @@
-# Beehive Contracts
+# Beehive v2
 
-Overview
-- Time-locked staking of DUES mints a lock NFT.
-- Early exits penalize 50% routed via distributor; expired exits return 100%.
-- Supports merging locks, voting checkpoints, and delegation.
+A HEX-style, revenue-only staking protocol. Users lock **DUES/quote LP** as transferable stake NFTs, earn from real inflows (never inflation), and share a quarterly **Honey Pot**. Loans, a stake marketplace, and a buyback sit on the same config-driven stack.
 
-## Legacy Narrative
-The Beehive runs on DUES which is inspired by HEX and has a meximum supply of just 3,333 tokens with the mint function renounced. Genius team, genius tokenomics.
+Launching on any EVM chain (Base first) is a config edit: `beehive.config.json` holds the chain/RPC, token names, supply, every fee/split/timer/LTV/penalty, Honey Pot epoch, quote token, DEX router/factory, oracle settings, admin keys, and LayerZero settings. Contracts do not hardcode chain IDs or addresses.
 
-## Narrative Overview
-### Mission
-- Reward disciplined, long‑term staking behavior.
-- Enable transparent, NFT‑backed positions with clear end‑of‑term outcomes.
+## Where every dollar of yield comes from
 
-### Features
-- Time‑locked staking up to 3 years; longer locks earn higher end‑of‑term payouts.
-- Self‑repaying loan concept (planned module) using lock NFTs as collateral.
-- Optional daily APR boosts via VRF (planned integration).
+There is **no DUES inflation** after genesis. Stakers are paid only from protocol inflows, all routed through `RevenueHub` with a per-source event:
 
-### Values
-- Industry and collective contribution; rewards patience, strategy, and resolve.
-- Aligns incentives toward honoring stakes and long‑term participation.
+| Source | What it is | Who pays | Who receives |
+| --- | --- | --- | --- |
+| Early unlock slash | 50% of LP from a stake unlocked before maturity | The exiting staker | Remaining stakers, Honey Pot, buyback (config split) |
+| Late-end penalty | Growing cut of LP if a matured stake sits past the grace window | The late unstaker | Same split |
+| Marketplace fee | 7.5% of the quote ask (config) | NFT buyer | Same split |
+| Loan interest | APR on escrowed-NFT loans, a config share to stakers | Borrower | Lenders keep the rest; staker share goes through `RevenueHub` |
+| LodgeFi deposit hook | Approved-source `notify(LodgeFiDeposit, …)` | LodgeFi / partner | Same split |
+| Protocol revenue hook | Approved-source `notify(ProtocolHook, …)` | Any approved module | Same split |
+| Genesis proceeds | Quote left after the LP seed when genesis finalizes | Genesis depositors (as the sale) | Same split |
 
-### Early Exit Policy
-- Early exit: 50% principal penalty; rewards forfeited; penalty redistributed via distributor.
-- Expired exit: 100% principal returned; rewards claimable via distributor.
+Claims (staker rewards and Honey Pot) have **no fee**. Trading is never paused: there is no market halt switch (`haltTrading` in config is rejected by the validator).
 
-### Airdrops
-- DUES stakers receive airdrops from future Lodge projects on launch.
+### Honey Pot
 
-### Profit Sources (Narrative)
-- Sales tax allocation (conceptual) and periodic conversions.
-- Early exit penalties redistributed to active stakers.
-- Price appreciation and scarcity dynamics.
+A configurable share of every inflow accrues for the current epoch (default 90 days). Only stakes that were **active for the entire epoch** (locked at or before epoch start, not unlocked before epoch end) can claim, pro rata by **fixed** lock weight. Views: `potSize`, `countdown`, `isEligible` / `isEligibleForEpoch`.
 
-### Price Discovery & Arbitrage
-- Multi‑chain deployment creates opportunities for arbitrage across DUES and related pairs.
+### Marketplace discounts
 
-### Deposits & NFTs
-- On deposit, an NFT is minted containing stake information (amount, start time, chosen lock duration).
-- The NFT is required to redeem end‑of‑stake outcomes.
+Listings are in the quote token. `quoteMaturedValue(tokenId)` returns the oracle LP value, the ask, and the discount in bps so a ~40% (or any) discount versus matured value is visible. Anti-wash: no self-buy, and a minimum listing time.
 
-### Merging Locks
-- Two positions can be merged into one; the new lock end uses the later of the two end times.
+### Loans
 
-### Cross‑Chain Plan
-- Multi‑chain roll‑out over time; users may bridge to chains with higher returns.
+The stake NFT is **escrowed** in `BeehiveLoans` for the life of the loan. Borrowers cannot revoke approval to block liquidation. LTV is 30–40% of **TWAP LP value**, not decaying voting power. Lenders `deposit` / `withdraw` shares. Liquidation is a Dutch auction; surplus above debt returns to the borrower.
 
-### Supply & Tokenomics
-- Max DUES: 3,333.
-- Initial DUES target ~2,000; remaining emissions reward Farmers.
-- No developer pay or team allocation; community‑driven supply.
+## Token and locks
 
-### Earning DUES
-- Provide LEVEL/ETH liquidity (minimum 7 days).
-- Provide LODGE/ETH liquidity (minimum 7 days).
-- Create a Beehive stake and earn from redistributed penalties.
-- Longer participation increases compounding effects over time.
+- **DUES**: hard cap **3,333**. Genesis (~30 days) mints the cap, seeds DUES/quote LP, then **permanently disables minting**.
+- **Locks**: only the DUES/quote LP token. 30 days to 3 years. Each lock is a transferable ERC-721. Longer and larger locks get bonus weight. Weight does **not** decay.
 
-### Rewards Mechanics (Narrative)
-- Allocation weight approximates: `weight = (amount * timeLocked) / maxLockTime`.
-- Designed to align rewards with commitment duration and stake size.
+## Config, validator, CreateX
 
-## Technical Overview
-- Contracts live under `contracts/` and are compiled/tested with Foundry.
-- Core components:
-  - `contracts/BeehiveEscrow.sol`: ve-style escrow that mints an NFT representing a time-locked DUES position; supports create/increase/extend/withdraw, voting checkpoints, and delegation. Early withdrawals return 50% to the user, route 50% to `team` and forfeit rewards.
-  - `contracts/BeehiveDistributor.sol`: tracks weekly token distributions and computes claimable amounts per ve position.
-  - `contracts/VeArtProxy.sol`: generates on-chain tokenURI metadata.
-  - Libraries and interfaces under `contracts/libraries/` and `contracts/interfaces/`.
+- Schema: `config/beehive.schema.json`
+- Examples: `beehive.config.json` (local), `config/beehive.base.example.json` (Base)
+- Validator: `script/config/ConfigValidator.sol` — rejects unsafe ranges, share splits ≠ 100%, halt flags, missing live addresses, broken LayerZero peers
+- CREATE3: `createx.factory` + per-contract salts. `Launch01Predict` writes predicted addresses back into the config; later stages consume them.
 
-## Early Exit Policy
-- Early withdraw: user receives 50% of the locked principal; the remaining 50% is penalized and routed to `team`. Rewards are forfeited.
-- Expired withdraw: user receives 100% of locked principal. If a rewards distributor is set, accrued rewards can be claimed before or at withdraw.
-  - Implementation: see `contracts/BeehiveEscrow.sol:922` (withdraw), penalty routing and supply accounting.
+```bash
+# validate
+forge script script/launch/ValidateConfig.s.sol:ValidateConfig
 
-## Merging Locks
-- Owners can merge two NFTs into one larger stake; the resulting lock end uses the later of the two lock end times.
-  - Implementation: `contracts/BeehiveEscrow.sol:1191` (merge).
+# staged launch (named launch, not deploy)
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch01Predict.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch02Token.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch03Core.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch04Markets.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch05Wire.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch06Omni.s.sol --rpc-url $RPC --broadcast
+BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch07Handoff.s.sol --rpc-url $RPC --broadcast
+```
 
-## Distributor
-- Weekly buckets allocated based on ve supply snapshots; users claim per-tokenId.
-  - Implementation: `contracts/BeehiveDistributor.sol:194` (claim flow) and `contracts/BeehiveDistributor.sol:57` (checkpoint token).
+Fill `dex.router`, `dex.factory`, `dex.pairInitCodeHash`, `tokens.quote.address`, `createx.factory`, and admin keys in the config for the target chain. LayerZero (`layerzero.enabled`, endpoint, eid, peers) is optional and config-driven.
 
-## Quick Start
-- Prereqs: Foundry installed (`forge --version`).
-- Build: `cd beehive-contracts && forge build`
-- Test: `forge test`
-- Remappings: configured in `foundry.toml` for OpenZeppelin and `forge-std`.
+## Build and test
 
-## Scripts
-- Deploy Escrow: `forge script script/DeployEscrow.s.sol:DeployEscrow --rpc-url <RPC> --broadcast --private-key <KEY> --sig "run(address,address)" <duesToken> <team>`
-- Admin Dashboard (multi-action):
-  - Set addresses: `--sig "runSetAddresses(address,address,address)" <escrow> <team> <distributor>`
-  - Set art proxy: `--sig "runSetArtProxy(address,address)" <escrow> <artProxy>`
-  - Set voter: `--sig "runSetVoter(address,address)" <escrow> <voter>`
-  - Distributor checkpoints: `--sig "runCheckpointDistributor(address)" <distributor>`
-  - Merge locks: `--sig "runMerge(address,uint256,uint256)" <escrow> <fromId> <toId>`
-  - Claim many: `--sig "runClaimMany(address,uint256[])" <distributor> "[<id1>,<id2>]"`
-  - Create lock: `--sig "runCreateLock(address,uint256,uint256)" <escrow> <amount> <lockDuration>`
-  - Increase amount: `--sig "runIncreaseAmount(address,uint256,uint256)" <escrow> <tokenId> <amount>`
-  - Increase unlock time: `--sig "runIncreaseUnlockTime(address,uint256,uint256)" <escrow> <tokenId> <lockDuration>`
-  - Withdraw: `--sig "runWithdraw(address,uint256)" <escrow> <tokenId>`
-- Single-purpose helpers:
-- `script/CreateLock.s.sol`, `script/IncreaseAmount.s.sol`, `script/IncreaseUnlockTime.s.sol`, `script/MergeLocks.s.sol`, `script/Withdraw.s.sol`, `script/ClaimRewards.s.sol`, `script/ClaimRewardsMany.s.sol`
+```bash
+forge build
+forge test
+```
 
-### Parameters
-- `escrow`: address of `BeehiveEscrow`.
-- `distributor`: address of `BeehiveDistributor`.
-- `duesToken`: ERC20 token address used for escrow deposits.
-- `team`, `voter`, `artProxy`: admin-controlled addresses.
-- `amount`: DUES amount (wei) to lock or increase.
-- `lockDuration`: seconds to lock or extend (capped at 3 years).
-- `tokenId`: veNFT id.
+Solidity **0.8.26** only. Custom errors, no `assert` access checks. Sensitive setters are bounded and intended to run through `BeehiveTimelock` after handoff.
 
-## Examples (Dev Network)
-- Assumes an Anvil RPC at `http://localhost:8545` and using the first default account as the broadcaster.
-- Example addresses (Anvil):
-  - Escrow: `0x1000000000000000000000000000000000000001` (replace with deployed address)
-  - Distributor: `0x1000000000000000000000000000000000000002`
-  - DUES token: `0x1000000000000000000000000000000000000003`
-  - Team: `0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266`
+## Layout
 
-- Deploy escrow:
-  - `forge script script/DeployEscrow.s.sol:DeployEscrow --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "run(address,address)" 0x1000...003 0xf39f...2266`
+- `contracts/` — DUES, genesis, locks, revenue, Honey Pot, market, loans, TWAP oracle, buyback, timelock, CREATE3 factory, Omni settings
+- `script/launch/` — staged launch + validator
+- `script/config/` — config struct, JSON loader, factory, validator
+- `test/` — unit, fuzz, exploit (slash bypass, liquidation griefing, Honey Pot gaming, wash trades, reentrancy), dual-chain launch
+- `legacy/` — Beehive v1 (veNFT + old loans). Not compiled.
 
-- Set addresses:
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <TEAM_PK> --sig "runSetAddresses(address,address,address)" 0x1000...001 0xf39f...2266 0x1000...002`
+## Admin
 
-- Create lock (1 DUES for 2 weeks):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runCreateLock(address,uint256,uint256)" 0x1000...001 1000000000000000000 1209600`
+Owner keeps control. After `Launch07Handoff`, protocol ownership is the timelock. Delay is bounded by config. Guardian can cancel queued calls.
 
-- Increase amount (add 0.5 DUES to tokenId 1):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runIncreaseAmount(address,uint256,uint256)" 0x1000...001 1 500000000000000000`
-
-- Increase unlock time (extend by 1 week for tokenId 1):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runIncreaseUnlockTime(address,uint256,uint256)" 0x1000...001 1 604800`
-
-- Merge locks (fromId 1 into toId 2):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runMerge(address,uint256,uint256)" 0x1000...001 1 2`
-
-- Claim rewards (many):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runClaimMany(address,uint256[])" 0x1000...002 "[1,2]"`
-
-- Withdraw (handles early vs expired):
-  - `forge script script/AdminDashboard.s.sol:AdminDashboard --rpc-url http://localhost:8545 --broadcast --private-key <ANVIL_PK> --sig "runWithdraw(address,uint256)" 0x1000...001 1`
-
-## Security & Status
-- Not audited. Use at your own risk.
-- No reliance on `tx.origin` in guards; per-sender-per-block guard only.
-- Mixed pragma versions are supported via Foundry auto solc detection.
-
-## Roadmap
-- Self-repaying loans against ve positions.
-- Chainlink VRF-based daily APR boosts (docs previously used “VFR”; intended “VRF”).
-- Expanded distributor logic and cross-chain deployment tooling.
- 
-## Omnichain Demo
-- Targets Sepolia (home) and Arbitrum Sepolia (remote).
-- Deploy OFT on both and set peers:
-  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,address,address)" DUES DUES <HOME_ENDPOINT> <DELEGATE>`
-  - `forge script script/omni/DeployOFT.s.sol:DeployOFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,address,address)" DUES DUES <REMOTE_ENDPOINT> <DELEGATE>`
-- Deploy ONFT on both and set peers:
-  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(string,string,address,address)" BeehiveLock bLOCK <HOME_ENDPOINT> <DELEGATE>`
-  - `forge script script/omni/DeployONFT.s.sol:DeployONFT --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "run(string,string,address,address)" BeehiveLock bLOCK <REMOTE_ENDPOINT> <DELEGATE>`
-- Set peers (trusted remotes):
-  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "runSetOFT(address,uint32,address)" <oftHome> <REMOTE_EID> <oftRemote>`
-  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "runSetOFT(address,uint32,address)" <oftRemote> <HOME_EID> <oftHome>`
-  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "runSetONFT(address,uint32,address)" <onftHome> <REMOTE_EID> <onftRemote>`
-  - `forge script script/omni/SetPeers.s.sol:SetPeers --rpc-url <RPC_REMOTE> --broadcast --private-key <KEY_REMOTE> --sig "runSetONFT(address,uint32,address)" <onftRemote> <HOME_EID> <onftHome>`
-- Bridge DUES:
-  - `forge script script/omni/BridgeOFT.s.sol:BridgeOFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint32,address,uint256,bytes)" <oftHome> <REMOTE_EID> <toRemote> 1000000000000000000 0x --value <fee>`
-- Mirror lock NFT:
-  - `forge script script/omni/BridgeONFT.s.sol:BridgeONFT --rpc-url <RPC_HOME> --broadcast --private-key <KEY_HOME> --sig "run(address,uint32,address,uint256,bytes)" <onftHome> <REMOTE_EID> <toRemote> <tokenId> 0x --value <fee>`
+v1 issues this stack removes: borrower approval griefing, decaying-power LTV, liquidator taking the whole NFT at cost, no interest, lenders unable to withdraw `fund()`, no oracle, no timelock, `assert` auth, mixed compiler versions.
