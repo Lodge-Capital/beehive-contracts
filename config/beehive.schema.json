@@ -41,7 +41,12 @@
       }
     },
     "tokens": { "type": "object" },
-    "genesis": { "type": "object" },
+    "genesis": {
+      "type": "object",
+      "properties": {
+        "proceedsToRevenueBps": { "type": "integer", "minimum": 0, "maximum": 10000 }
+      }
+    },
     "locks": { "type": "object" },
     "fees": { "type": "object" },
     "honeyPot": { "type": "object" },
@@ -49,8 +54,19 @@
     "oracle": { "type": "object" },
     "dex": { "type": "object" },
     "buyback": { "type": "object" },
-    "admin": { "type": "object" },
-    "layerzero": { "type": "object" },
+    "admin": {
+      "type": "object",
+      "properties": {
+        "treasury": { "type": "string" }
+      }
+    },
+    "layerzero": {
+      "type": "object",
+      "properties": {
+        "oft": { "type": "string" },
+        "onft": { "type": "string" }
+      }
+    },
     "addresses": { "type": "object" },
     "haltTrading": { "type": "boolean", "const": false }
   }

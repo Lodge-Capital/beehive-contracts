@@ -53,6 +53,7 @@ library ConfigValidator {
       revert BeehiveErrors.InvalidConfig("genesis.bonus");
     }
     if (c.genesis.biggerRefWhole == 0) revert BeehiveErrors.InvalidConfig("genesis.biggerRefWhole");
+    if (c.genesis.proceedsToRevenueBps > 10_000) revert BeehiveErrors.InvalidConfig("genesis.proceedsToRevenueBps");
 
     if (c.locks.minLockSeconds < DAY) revert BeehiveErrors.InvalidConfig("locks.minLockSeconds");
     if (c.locks.maxLockSeconds > 4 * YEAR) revert BeehiveErrors.InvalidConfig("locks.maxLockSeconds");
@@ -107,6 +108,7 @@ library ConfigValidator {
 
     if (c.admin.owner == address(0)) revert BeehiveErrors.InvalidConfig("admin.owner");
     if (c.admin.guardian == address(0)) revert BeehiveErrors.InvalidConfig("admin.guardian");
+    if (requireLiveAddresses && c.admin.treasury == address(0)) revert BeehiveErrors.InvalidConfig("admin.treasury");
     if (c.admin.timelockMinDelaySeconds < DAY) revert BeehiveErrors.InvalidConfig("admin.timelockMinDelaySeconds");
     if (c.admin.timelockMaxDelaySeconds < c.admin.timelockMinDelaySeconds) {
       revert BeehiveErrors.InvalidConfig("admin.timelockMaxDelaySeconds");

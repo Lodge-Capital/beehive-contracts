@@ -64,4 +64,29 @@ contract DuesGenesisTest is BeehiveFixture {
     vm.expectRevert(BeehiveErrors.AlreadyClaimed.selector);
     genesis.claim();
   }
+
+  function testGenesisSplitsLeftoverBetweenRevenueAndTreasury() public {
+    address treasury = makeAddr("treasury");
+    DuesToken fresh = new DuesToken("DUES", "DUES", 18, MAX_SUPPLY, owner);
+    genesis = new GenesisLaunch(
+      address(fresh), address(quote), owner, uint64(block.timestamp), 30 days, 1_000, 0, 0, 10_000 ether
+    );
+    fresh.setMinter(address(genesis));
+    genesis.setRouter(address(router));
+    genesis.setRevenueHub(address(revenue));
+    genesis.setTreasury(treasury);
+    genesis.setProceedsToRevenueBps(5_000);
+    revenue.setApprovedSource(address(genesis), true);
+
+    vm.startPrank(alice);
+    quote.approve(address(genesis), 2_000 ether);
+    genesis.deposit(2_000 ether);
+    vm.stopPrank();
+
+    vm.warp(block.timestamp + 30 days);
+    uint256 leftoverAfterSeed = 2_000 ether - (2_000 ether * 1_000 / 10_000);
+    genesis.finalize();
+    assertEq(quote.balanceOf(treasury), leftoverAfterSeed / 2);
+    assertEq(honey.potSize(address(quote)) + quote.balanceOf(address(buyback)) + quote.balanceOf(address(locks)), leftoverAfterSeed / 2);
+  }
 }

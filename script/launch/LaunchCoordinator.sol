@@ -204,6 +204,9 @@ library LaunchCoordinator {
     );
     if (c.layerzero.enabled) {
       OmniSettings omni = OmniSettings(c.addresses.omni);
+      if (c.layerzero.oft != address(0) || c.layerzero.onft != address(0)) {
+        omni.setWrappers(c.layerzero.oft, c.layerzero.onft);
+      }
       uint256 n = c.layerzero.peers.length;
       for (uint256 i; i < n; ++i) {
         omni.setPeer(c.layerzero.peers[i].eid, bytes32(uint256(uint160(c.layerzero.peers[i].peer))));
@@ -227,6 +230,8 @@ library LaunchCoordinator {
     dues.setMinter(c.addresses.genesis);
     genesis.setRouter(c.dex.router);
     genesis.setRevenueHub(c.addresses.revenue);
+    if (c.admin.treasury != address(0)) genesis.setTreasury(c.admin.treasury);
+    genesis.setProceedsToRevenueBps(c.genesis.proceedsToRevenueBps);
     locks.setModules(c.addresses.revenue, c.addresses.honey);
     revenue.setModules(c.addresses.locks, c.addresses.honey, c.addresses.buyback);
     honey.setLocks(c.addresses.locks);

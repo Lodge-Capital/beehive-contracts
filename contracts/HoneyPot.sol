@@ -30,6 +30,8 @@ contract HoneyPot is Ownable, ReentrancyGuard {
   address[] public trackedTokens;
   mapping(address => bool) public isTracked;
 
+  uint8 internal constant MAX_CATCHUP = 4;
+
   event Credited(address indexed token, uint256 amount, uint32 indexed epoch);
   event EpochClosed(uint32 indexed id, uint64 start, uint64 end, uint256 eligibleWeight);
   event HoneyClaimed(uint256 indexed tokenId, address indexed token, uint32 indexed epoch, uint256 amount);
@@ -56,8 +58,9 @@ contract HoneyPot is Ownable, ReentrancyGuard {
     epochDuration = duration_;
   }
 
-  /// @notice Start a fresh epoch using current active weight. Does not pay the open pot.
+  /// @notice Launch-only alignment. Disabled after the first epoch is closed (handoff / live).
   function restartEpoch() external onlyOwner {
+    if (epochId != 0) revert BeehiveErrors.OutOfBounds();
     epochStart = uint64(block.timestamp);
     epochStartWeight = address(locks) == address(0) ? 0 : locks.totalWeight();
     epochExitWeight = 0;
@@ -73,13 +76,15 @@ contract HoneyPot is Ownable, ReentrancyGuard {
   function noteUnlock(uint256 tokenId, uint256 weight, bool existedAtEpochStart) external {
     if (msg.sender != address(locks)) revert BeehiveErrors.Unauthorized();
     tokenId;
-    if (existedAtEpochStart && weight > 0) {
+    // If the epoch already ended, this stake completed it; do not cut eligible weight.
+    if (existedAtEpochStart && weight > 0 && !_due()) {
       epochExitWeight += weight;
     }
   }
 
   function settleOnUnlock(uint256 tokenId, address to) external nonReentrant {
     if (msg.sender != address(locks)) revert BeehiveErrors.Unauthorized();
+    _closeDue(MAX_CATCHUP);
     uint32 closed = epochId;
     uint256 n = trackedTokens.length;
     for (uint32 id; id < closed; ++id) {
@@ -102,6 +107,7 @@ contract HoneyPot is Ownable, ReentrancyGuard {
   function credit(address token, uint256 amount) external {
     if (msg.sender != revenueHub) revert BeehiveErrors.Unauthorized();
     if (amount == 0) revert BeehiveErrors.ZeroAmount();
+    _closeDue(MAX_CATCHUP);
     if (!isTracked[token]) {
       isTracked[token] = true;
       trackedTokens.push(token);
@@ -136,33 +142,15 @@ contract HoneyPot is Ownable, ReentrancyGuard {
   }
 
   function closeEpoch() external nonReentrant {
-    uint64 end_ = epochStart + epochDuration;
-    if (block.timestamp < end_) revert BeehiveErrors.EpochNotEnded();
-    if (epochs[epochId].closed) revert BeehiveErrors.EpochAlreadyClosed();
-
-    uint256 eligible = currentEligibleWeight();
-    uint256 n = trackedTokens.length;
-    for (uint256 i; i < n; ++i) {
-      address token = trackedTokens[i];
-      epochPot[epochId][token] = accruing[token];
-      accruing[token] = 0;
+    if (!_due()) {
+      if (block.timestamp < uint256(epochStart) + uint256(epochDuration)) revert BeehiveErrors.EpochNotEnded();
+      revert BeehiveErrors.EpochAlreadyClosed();
     }
-    epochs[epochId] = BeehiveTypes.Epoch({
-      start: epochStart,
-      end: end_,
-      pot: 0,
-      eligibleWeight: eligible,
-      closed: true
-    });
-    emit EpochClosed(epochId, epochStart, end_, eligible);
-
-    epochId += 1;
-    epochStart = end_;
-    epochStartWeight = address(locks) == address(0) ? 0 : locks.totalWeight();
-    epochExitWeight = 0;
+    _snapshotAndRoll();
   }
 
   function claim(uint256 tokenId, uint32 id, address token) external nonReentrant returns (uint256 amount) {
+    _closeDue(MAX_CATCHUP);
     if (msg.sender != locks.ownerOf(tokenId)) revert BeehiveErrors.NotStakeOwner();
     if (!epochs[id].closed) revert BeehiveErrors.EpochNotEnded();
     if (claimed[tokenId][id][token]) revert BeehiveErrors.AlreadyClaimed();
@@ -177,6 +165,39 @@ contract HoneyPot is Ownable, ReentrancyGuard {
     amount = (pot * weight) / eligible;
     IERC20(token).safeTransfer(msg.sender, amount);
     emit HoneyClaimed(tokenId, token, id, amount);
+  }
+
+  function _due() internal view returns (bool) {
+    return block.timestamp >= uint256(epochStart) + uint256(epochDuration) && !epochs[epochId].closed;
+  }
+
+  function _closeDue(uint8 maxCatchup) internal {
+    uint8 n;
+    while (_due() && n < maxCatchup) {
+      _snapshotAndRoll();
+      unchecked {
+        ++n;
+      }
+    }
+  }
+
+  function _snapshotAndRoll() internal {
+    uint64 end_ = epochStart + epochDuration;
+    uint256 eligible = currentEligibleWeight();
+    uint256 n = trackedTokens.length;
+    for (uint256 i; i < n; ++i) {
+      address token = trackedTokens[i];
+      epochPot[epochId][token] = accruing[token];
+      accruing[token] = 0;
+    }
+    epochs[epochId] =
+      BeehiveTypes.Epoch({start: epochStart, end: end_, pot: 0, eligibleWeight: eligible, closed: true});
+    emit EpochClosed(epochId, epochStart, end_, eligible);
+
+    epochId += 1;
+    epochStart = end_;
+    epochStartWeight = address(locks) == address(0) ? 0 : locks.totalWeight();
+    epochExitWeight = 0;
   }
 
   function _eligibleFor(uint256 tokenId, uint64 start_, uint64 end_, bool requireClosedWindow)

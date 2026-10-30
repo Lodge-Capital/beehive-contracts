@@ -40,6 +40,7 @@ struct GenesisCfg {
   uint16 timeBonusBps;
   uint16 biggerBonusBps;
   uint256 biggerRefWhole;
+  uint16 proceedsToRevenueBps;
 }
 
 struct LockCfg {
@@ -95,6 +96,7 @@ struct BuybackCfg {
 struct AdminCfg {
   address owner;
   address guardian;
+  address treasury;
   uint32 timelockDelaySeconds;
   uint32 timelockMinDelaySeconds;
   uint32 timelockMaxDelaySeconds;
@@ -109,6 +111,8 @@ struct LayerZeroCfg {
   bool enabled;
   address endpoint;
   uint32 eid;
+  address oft;
+  address onft;
   LzPeerCfg[] peers;
 }
 

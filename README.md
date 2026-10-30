@@ -16,13 +16,13 @@ There is **no DUES inflation** after genesis. Stakers are paid only from protoco
 | Loan interest | APR on escrowed-NFT loans, a config share to stakers | Borrower | Lenders keep the rest; staker share goes through `RevenueHub` |
 | LodgeFi deposit hook | Approved-source `notify(LodgeFiDeposit, …)` | LodgeFi / partner | Same split |
 | Protocol revenue hook | Approved-source `notify(ProtocolHook, …)` | Any approved module | Same split |
-| Genesis proceeds | Quote left after the LP seed when genesis finalizes | Genesis depositors (as the sale) | Same split |
+| Genesis proceeds | Quote left after the LP seed when genesis finalizes | Genesis depositors (as the sale) | **Half** (config `proceedsToRevenueBps`, default 50%) through `RevenueHub`; the rest to `admin.treasury` |
 
 Claims (staker rewards and Honey Pot) have **no fee**. Trading is never paused: there is no market halt switch (`haltTrading` in config is rejected by the validator).
 
 ### Honey Pot
 
-A configurable share of every inflow accrues for the current epoch (default 90 days). Only stakes that were **active for the entire epoch** (locked at or before epoch start, not unlocked before epoch end) can claim, pro rata by **fixed** lock weight. Views: `potSize`, `countdown`, `isEligible` / `isEligibleForEpoch`.
+A configurable share of every inflow accrues for the current epoch (default 90 days). Only stakes that were **active for the entire epoch** (locked at or before epoch start, not unlocked before epoch end) can claim, pro rata by **fixed** lock weight. Views: `potSize`, `countdown`, `isEligible` / `isEligibleForEpoch`. Epochs can be closed by anyone (`closeEpoch`) and also close lazily on credit/claim/unlock, catching up at most four elapsed epochs per call. `restartEpoch` is launch-only and reverts after the first close.
 
 ### Marketplace discounts
 
@@ -58,7 +58,7 @@ BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch06Omni.s.sol
 BEEHIVE_CONFIG=beehive.config.json forge script script/launch/Launch07Handoff.s.sol --rpc-url $RPC --broadcast
 ```
 
-Fill `dex.router`, `dex.factory`, `dex.pairInitCodeHash`, `tokens.quote.address`, `createx.factory`, and admin keys in the config for the target chain. LayerZero (`layerzero.enabled`, endpoint, eid, peers) is optional and config-driven.
+Fill `dex.router`, `dex.factory`, `dex.pairInitCodeHash`, `tokens.quote.address`, `createx.factory`, and admin keys in the config for the target chain. LayerZero is optional and config-driven: `OmniSettings` stores endpoint/eid/peers and, when `layerzero.oft` / `layerzero.onft` are set, forwards `setPeer` into those wrappers.
 
 ## Build and test
 

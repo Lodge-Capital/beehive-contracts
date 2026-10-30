@@ -61,9 +61,11 @@ contract LaunchDualChainTest is Test {
     assertFalse(OmniSettings(base.addresses.omni).enabled());
     assertFalse(OmniSettings(arb.addresses.omni).enabled());
 
-    // Genesis is wired to each chain's quote.
+    // Genesis is wired to each chain's quote and leftover split.
     assertEq(address(GenesisLaunch(base.addresses.genesis).quote()), address(usdc));
     assertEq(address(GenesisLaunch(arb.addresses.genesis).quote()), address(usdt));
+    assertEq(GenesisLaunch(base.addresses.genesis).treasury(), address(this));
+    assertEq(GenesisLaunch(base.addresses.genesis).proceedsToRevenueBps(), 5_000);
   }
 
   function testPredictedAddressesWrittenAndReusable() public {

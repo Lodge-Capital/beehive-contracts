@@ -19,6 +19,8 @@ contract GenesisLaunch is Ownable, ReentrancyGuard {
   IERC20 public immutable quote;
   IUniswapV2Router02 public router;
   IRevenueHub public revenueHub;
+  address public treasury;
+  uint16 public proceedsToRevenueBps;
 
   uint64 public immutable start;
   uint64 public immutable duration;
@@ -38,8 +40,11 @@ contract GenesisLaunch is Ownable, ReentrancyGuard {
   mapping(address => bool) public claimed;
 
   event Deposited(address indexed user, uint256 quoteAmount, uint256 shares);
-  event Finalized(uint256 minted, uint256 seededDues, uint256 seededQuote, uint256 leftoverQuote);
+  event Finalized(
+    uint256 minted, uint256 seededDues, uint256 seededQuote, uint256 leftoverQuote, uint256 toRevenue, uint256 toTreasury
+  );
   event Claimed(address indexed user, uint256 amount);
+  event ProceedsSplitUpdated(address treasury, uint16 proceedsToRevenueBps);
 
   constructor(
     address dues_,
@@ -56,6 +61,8 @@ contract GenesisLaunch is Ownable, ReentrancyGuard {
     if (duration_ == 0 || seedBps_ > 5_000 || biggerRef_ == 0) revert BeehiveErrors.OutOfBounds();
     dues = DuesToken(dues_);
     quote = IERC20(quote_);
+    treasury = owner_;
+    proceedsToRevenueBps = 5_000;
     start = start_;
     duration = duration_;
     seedBps = seedBps_;
@@ -72,6 +79,18 @@ contract GenesisLaunch is Ownable, ReentrancyGuard {
   function setRevenueHub(address hub_) external onlyOwner {
     if (hub_ == address(0)) revert BeehiveErrors.ZeroAddress();
     revenueHub = IRevenueHub(hub_);
+  }
+
+  function setTreasury(address treasury_) external onlyOwner {
+    if (treasury_ == address(0)) revert BeehiveErrors.ZeroAddress();
+    treasury = treasury_;
+    emit ProceedsSplitUpdated(treasury_, proceedsToRevenueBps);
+  }
+
+  function setProceedsToRevenueBps(uint16 bps_) external onlyOwner {
+    if (bps_ > 10_000) revert BeehiveErrors.OutOfBounds();
+    proceedsToRevenueBps = bps_;
+    emit ProceedsSplitUpdated(treasury, bps_);
   }
 
   function deadline() public view returns (uint64) {
@@ -133,14 +152,26 @@ contract GenesisLaunch is Ownable, ReentrancyGuard {
       lpToken = _pairOf();
     }
 
-    uint256 leftoverQuote = quote.balanceOf(address(this));
-    if (leftoverQuote > 0 && address(revenueHub) != address(0)) {
-      quote.forceApprove(address(revenueHub), leftoverQuote);
-      revenueHub.notify(BeehiveTypes.RevenueSource.GenesisProceeds, address(quote), leftoverQuote);
-    }
-
+    (uint256 leftoverQuote, uint256 toRevenue, uint256 toTreasuryAmt) = _routeLeftover();
     finalized = true;
-    emit Finalized(cap, seedDues, seedQuoteAmt, leftoverQuote);
+    emit Finalized(cap, seedDues, seedQuoteAmt, leftoverQuote, toRevenue, toTreasuryAmt);
+  }
+
+  function _routeLeftover() private returns (uint256 leftover, uint256 toRevenue, uint256 toTreasuryAmt) {
+    leftover = quote.balanceOf(address(this));
+    if (leftover == 0) return (0, 0, 0);
+    toRevenue = (leftover * uint256(proceedsToRevenueBps)) / 10_000;
+    toTreasuryAmt = leftover - toRevenue;
+    if (toRevenue > 0 && address(revenueHub) != address(0)) {
+      quote.forceApprove(address(revenueHub), toRevenue);
+      revenueHub.notify(BeehiveTypes.RevenueSource.GenesisProceeds, address(quote), toRevenue);
+    } else {
+      toTreasuryAmt = leftover;
+      toRevenue = 0;
+    }
+    if (toTreasuryAmt > 0) {
+      quote.safeTransfer(treasury == address(0) ? owner() : treasury, toTreasuryAmt);
+    }
   }
 
   function claim() external nonReentrant {

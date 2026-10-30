@@ -40,7 +40,8 @@
     "liquiditySeedBps": 1000,
     "timeBonusBps": 2000,
     "biggerBonusBps": 1000,
-    "biggerRefWhole": 10000
+    "biggerRefWhole": 10000,
+    "proceedsToRevenueBps": 5000
   },
   "locks": {
     "nftName": "Beehive Stake",
@@ -88,6 +89,7 @@
   "admin": {
     "owner": "0x0000000000000000000000000000000000000001",
     "guardian": "0x0000000000000000000000000000000000000002",
+    "treasury": "0x0000000000000000000000000000000000000001",
     "timelockDelaySeconds": 172800,
     "timelockMinDelaySeconds": 86400,
     "timelockMaxDelaySeconds": 2592000
@@ -96,6 +98,8 @@
     "enabled": false,
     "endpoint": "0x0000000000000000000000000000000000000000",
     "eid": 0,
+    "oft": "0x0000000000000000000000000000000000000000",
+    "onft": "0x0000000000000000000000000000000000000000",
     "peers": []
   },
   "addresses": {

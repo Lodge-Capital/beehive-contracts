@@ -79,4 +79,18 @@ contract ConfigValidatorTest is Test {
     vm.expectRevert(abi.encodeWithSelector(BeehiveErrors.InvalidConfig.selector, "layerzero.endpoint"));
     harness.validate(c, true);
   }
+
+  function testRejectsHighProceedsToRevenueBps() public {
+    BeehiveCfg memory c = _valid();
+    c.genesis.proceedsToRevenueBps = 10_001;
+    vm.expectRevert(abi.encodeWithSelector(BeehiveErrors.InvalidConfig.selector, "genesis.proceedsToRevenueBps"));
+    harness.validate(c, true);
+  }
+
+  function testRejectsMissingTreasuryWhenLive() public {
+    BeehiveCfg memory c = _valid();
+    c.admin.treasury = address(0);
+    vm.expectRevert(abi.encodeWithSelector(BeehiveErrors.InvalidConfig.selector, "admin.treasury"));
+    harness.validate(c, true);
+  }
 }

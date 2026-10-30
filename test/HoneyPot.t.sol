@@ -62,4 +62,27 @@ contract HoneyPotTest is BeehiveFixture {
     vm.expectRevert(BeehiveErrors.EpochNotEnded.selector);
     honey.closeEpoch();
   }
+
+  function testLazyCloseOnClaimWithoutPoke() public {
+    uint256 lp = _addLiquidity(alice, 10 ether, 10 ether);
+    uint256 id = _lock(alice, lp, 200 days);
+    honey.restartEpoch();
+    quote.approve(address(revenue), 40 ether);
+    revenue.notify(BeehiveTypes.RevenueSource.ProtocolHook, address(quote), 40 ether);
+    vm.warp(block.timestamp + 90 days);
+    vm.prank(alice);
+    uint256 paid = honey.claim(id, 0, address(quote));
+    assertGt(paid, 0);
+    assertEq(uint256(honey.epochId()), 1);
+  }
+
+  function testRestartEpochDisabledAfterFirstClose() public {
+    uint256 lp = _addLiquidity(alice, 10 ether, 10 ether);
+    _lock(alice, lp, 180 days);
+    honey.restartEpoch();
+    vm.warp(block.timestamp + 90 days);
+    honey.closeEpoch();
+    vm.expectRevert(BeehiveErrors.OutOfBounds.selector);
+    honey.restartEpoch();
+  }
 }

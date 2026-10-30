@@ -42,6 +42,7 @@ library ConfigLib {
     c.genesis.timeBonusBps = uint16(json.readUint(".genesis.timeBonusBps"));
     c.genesis.biggerBonusBps = uint16(json.readUint(".genesis.biggerBonusBps"));
     c.genesis.biggerRefWhole = json.readUint(".genesis.biggerRefWhole");
+    c.genesis.proceedsToRevenueBps = uint16(json.readUint(".genesis.proceedsToRevenueBps"));
 
     c.locks.nftName = json.readString(".locks.nftName");
     c.locks.nftSymbol = json.readString(".locks.nftSymbol");
@@ -81,6 +82,7 @@ library ConfigLib {
 
     c.admin.owner = json.readAddress(".admin.owner");
     c.admin.guardian = json.readAddress(".admin.guardian");
+    c.admin.treasury = json.readAddress(".admin.treasury");
     c.admin.timelockDelaySeconds = uint32(json.readUint(".admin.timelockDelaySeconds"));
     c.admin.timelockMinDelaySeconds = uint32(json.readUint(".admin.timelockMinDelaySeconds"));
     c.admin.timelockMaxDelaySeconds = uint32(json.readUint(".admin.timelockMaxDelaySeconds"));
@@ -88,6 +90,8 @@ library ConfigLib {
     c.layerzero.enabled = json.readBool(".layerzero.enabled");
     c.layerzero.endpoint = json.readAddress(".layerzero.endpoint");
     c.layerzero.eid = uint32(json.readUint(".layerzero.eid"));
+    c.layerzero.oft = json.readAddress(".layerzero.oft");
+    c.layerzero.onft = json.readAddress(".layerzero.onft");
 
     c.addresses.dues = json.readAddress(".addresses.dues");
     c.addresses.genesis = json.readAddress(".addresses.genesis");

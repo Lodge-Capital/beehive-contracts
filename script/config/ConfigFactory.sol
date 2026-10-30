@@ -34,6 +34,7 @@ library ConfigFactory {
     c.genesis.timeBonusBps = 2_000;
     c.genesis.biggerBonusBps = 1_000;
     c.genesis.biggerRefWhole = 10_000;
+    c.genesis.proceedsToRevenueBps = 5_000;
 
     c.locks.nftName = "Beehive Stake";
     c.locks.nftSymbol = "HIVE";
@@ -89,6 +90,7 @@ library ConfigFactory {
     c.dex.pairInitCodeHash = pairInitHash;
     c.admin.owner = owner;
     c.admin.guardian = guardian;
+    c.admin.treasury = owner;
   }
 
   function withChain(BeehiveCfg memory c, string memory name, uint256 chainId, string memory rpc)
